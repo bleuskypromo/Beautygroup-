@@ -1,9 +1,9 @@
-name: Bluesky Auto Reposter (Beautygroup)
+name: Bluesky Auto Reposter (BeautyGroup via feed)
 
 on:
   schedule:
-    - cron: "0 */1 * * *"  # elke 1 uur
-  workflow_dispatch:        # handmatig starten mogelijk
+    - cron: "0 */2 * * *"  # elke 2 uur
+  workflow_dispatch:
 
 jobs:
   run:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: pip install atproto
 
-      - name: Run autoposter (beautygroup)
+      - name: Run autoposter
         env:
           BSKY_USERNAME_BG: ${{ secrets.BSKY_USERNAME_BG }}
           BSKY_PASSWORD_BG: ${{ secrets.BSKY_PASSWORD_BG }}
