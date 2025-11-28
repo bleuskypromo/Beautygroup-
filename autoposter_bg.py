@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 FEED_URI = "at://did:plc:jaka644beit3x4vmmg6yysw7/app.bsky.feed.generator/aaamyqwuiyasw"
 MAX_PER_RUN = 100            # Verander indien gewenst
 MAX_PER_USER = 3             # Verander indien gewenst
-HOURS_BACK = 2               # Laatste 2 uur
+HOURS_BACK = 24               # Laatste 2 uur
 DELAY_SECONDS = 2            # 2 seconden vertraging tussen reposts
 
 def log(msg: str):
