@@ -2,120 +2,177 @@ from atproto import Client
 import os
 import time
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 # === CONFIG ===
+# BeautyGroup-feed (NIET de lijst, maar de feed-URL)
 FEED_URI = "at://did:plc:jaka644beit3x4vmmg6yysw7/app.bsky.feed.generator/aaamyqwuiyasw"
-MAX_PER_RUN = 100            # Verander indien gewenst
-MAX_PER_USER = 3             # Verander indien gewenst
-HOURS_BACK = 24               # Laatste 2 uur
-DELAY_SECONDS = 2            # 2 seconden vertraging tussen reposts
 
-def log(msg: str):
-    """Minimalistische logging zoals NSFW-template"""
-    now = datetime.now(timezone.utc).strftime("[%H:%M:%S]")
-    print(f"{now} {msg}")
+MAX_PER_RUN = 100          # max reposts per run
+MAX_PER_USER = 3           # max reposts per account per run
+HOURS_BACK = 24            # tijdvenster: laatste 24 uur
+SLEEP_SECONDS = 2          # vertraging tussen reposts/likes
+REPOST_LOG = "reposted_bg.txt"  # eigen logbestand voor BeautyGroup
 
-def parse_time(record, post):
-    """ timestamp ophalen """
-    for attr in ["createdAt", "indexedAt"]:
+
+def log(msg: str) -> None:
+    """Eenvoudige logger met tijdstempel."""
+    now = datetime.now().strftime("%H:%M:%S")
+    print(f"[{now}] {msg}")
+
+
+def load_repost_log(path: str) -> set[str]:
+    p = Path(path)
+    if not p.exists():
+        return set()
+    with p.open("r", encoding="utf-8") as f:
+        return set(line.strip() for line in f if line.strip())
+
+
+def append_to_repost_log(path: str, uri: str) -> None:
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(uri + "\n")
+
+
+def get_created_dt(record, post):
+    """Zoekt naar een bruikbare timestamp op record of post."""
+    for attr in ("createdAt", "indexedAt", "created_at", "timestamp"):
         val = getattr(record, attr, None) or getattr(post, attr, None)
-        if val:
-            try:
-                return datetime.fromisoformat(val.replace("Z", "+00:00"))
-            except:
-                continue
+        if not val:
+            continue
+        try:
+            return datetime.fromisoformat(val.replace("Z", "+00:00"))
+        except Exception:
+            continue
     return None
 
-def main():
-    client = Client()
-    client.login(os.environ["BSKY_USERNAME_BG"], os.environ["BSKY_PASSWORD_BG"])
-    log("✅ Ingelogd.")
 
-    try:
-        log("📥 Feed ophalen...")
-        feed = client.app.bsky.feed.get_feed({"feed": FEED_URI, "limit": 100}).feed
-        log(f"📊 {len(feed)} posts gevonden in feed.")
-    except Exception as e:
-        log(f"⚠️ Feed loading error: {e}")
+def main():
+    username = os.environ.get("BSKY_USERNAME_BG")
+    password = os.environ.get("BSKY_PASSWORD_BG")
+
+    if not username or not password:
+        log("❌ Geen inloggegevens (BSKY_USERNAME_BG / BSKY_PASSWORD_BG). Stop.")
         return
 
-    repost_log_path = "reposted_bg.txt"
-    done = set()
-    if os.path.exists(repost_log_path):
-        with open(repost_log_path, "r") as f:
-            done = set(f.read().splitlines())
+    client = Client()
+    client.login(username, password)
+    log("✅ Ingelogd.")
+
+    # Repost-log laden (alleen voor BeautyGroup)
+    already_reposted = load_repost_log(REPOST_LOG)
+
+    # Feed ophalen
+    try:
+        log("📥 Feed ophalen...")
+        feed = client.app.bsky.feed.get_feed({"feed": FEED_URI, "limit": 100})
+        items = feed.feed
+        log(f"📊 {len(items)} posts gevonden in feed.")
+    except Exception as e:
+        log(f"⚠️ Fout bij ophalen feed: {e}")
+        return
 
     cutoff = datetime.now(timezone.utc) - timedelta(hours=HOURS_BACK)
-    candidates = []
-    per_user_count = {}
 
-    for item in feed:
+    candidates: list[dict] = []
+
+    # Oudste eerst verwerken
+    for item in reversed(items):
         post = item.post
         record = post.record
         uri = post.uri
-        cid = post.cid
-        handle = post.author.handle
 
-        created_dt = parse_time(record, post)
+        # skip reposts/quotes/reasons
+        if getattr(item, "reason", None) is not None:
+            continue
+
+        # skip replies
+        if getattr(record, "reply", None):
+            continue
+
+        # al gedaan in vorige run?
+        if uri in already_reposted:
+            continue
+
+        created_dt = get_created_dt(record, post)
         if not created_dt or created_dt < cutoff:
             continue
-        if uri in done:
-            continue
 
-        per_user_count[handle] = per_user_count.get(handle, 0)
-        if per_user_count[handle] >= MAX_PER_USER:
-            continue
+        handle = getattr(post.author, "handle", "unknown")
+        candidates.append(
+            {
+                "uri": uri,
+                "cid": post.cid,
+                "handle": handle,
+                "created": created_dt,
+            }
+        )
 
-        candidates.append({"uri": uri, "cid": cid, "handle": handle, "created": created_dt})
+    log(f"🧩 {len(candidates)} geschikte posts gevonden.")
+
+    if not candidates:
+        log("🔥 Klaar — 0 reposts uitgevoerd (0 geliked).")
+        log(f"⏰ Run afgerond op {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        return
 
     # Oudste eerst
     candidates.sort(key=lambda x: x["created"])
-    candidates = candidates[:MAX_PER_RUN]
 
-    total = len(candidates)
-    log(f"🧩 {total} geschikte posts gevonden.")
+    per_user_count: dict[str, int] = {}
+    reposted_count = 0
+    liked_count = 0
 
-    reposted = 0
-    liked = 0
+    for post_data in candidates:
+        if reposted_count >= MAX_PER_RUN:
+            break
 
-    for idx, post in enumerate(candidates, start=1):
+        uri = post_data["uri"]
+        cid = post_data["cid"]
+        handle = post_data["handle"]
+
+        per_user_count.setdefault(handle, 0)
+        if per_user_count[handle] >= MAX_PER_USER:
+            continue
+
         try:
+            # Repost
             client.app.bsky.feed.repost.create(
                 repo=client.me.did,
                 record={
-                    "subject": {"uri": post["uri"], "cid": post["cid"]},
-                    "createdAt": client.get_current_time_iso(),
-                    "$type": "app.bsky.feed.repost",
+                    "subject": {"uri": uri, "cid": cid},
+                    "createdAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                 },
             )
-            reposted += 1
-            done.add(post["uri"])
-            per_user_count[post["handle"]] += 1
+            reposted_count += 1
+            per_user_count[handle] += 1
+            already_reposted.add(uri)
+            append_to_repost_log(REPOST_LOG, uri)
 
+            # Like
             try:
                 client.app.bsky.feed.like.create(
                     repo=client.me.did,
                     record={
-                        "subject": {"uri": post["uri"], "cid": post["cid"]},
-                        "createdAt": client.get_current_time_iso(),
-                        "$type": "app.bsky.feed.like",
+                        "subject": {"uri": uri, "cid": cid},
+                        "createdAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     },
                 )
-                liked += 1
-            except:
-                pass
+                liked_count += 1
+            except Exception as e_like:
+                log(f"⚠️ Fout bij liken: {e_like}")
 
-            if idx < total:
-                time.sleep(DELAY_SECONDS)
+            time.sleep(SLEEP_SECONDS)
 
         except Exception as e:
-            log(f"⚠️ {e}")
+            log(f"⚠️ Fout bij repost: {e}")
 
-    with open(repost_log_path, "w") as f:
-        f.write("\n".join(done))
-
-    log(f"🔥 Klaar — {reposted} reposts uitgevoerd ({liked} geliked).")
+    log(f"🔥 Klaar — {reposted_count} reposts uitgevoerd ({liked_count} geliked).")
+    log(
+        f"ℹ️ Per-user limieten toegepast, tijdvenster: laatste {HOURS_BACK} uur, "
+        f"max {MAX_PER_RUN} per run, max {MAX_PER_USER} per account."
+    )
     log(f"⏰ Run afgerond op {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
+
 
 if __name__ == "__main__":
     main()
