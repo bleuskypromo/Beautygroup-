@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 # === CONFIG ===
 LIST_URI = "at://did:plc:jaka644beit3x4vmmg6yysw7/app.bsky.graph.list/3m3iga6wnmz2p"
-HOURS_BACK = 2          # tijdvenster (nu 5 uur)
+HOURS_BACK = 3          # tijdvenster (nu 3 uur)
 MAX_PER_RUN = 100       # max reposts per run
 MAX_PER_USER = 5        # max per account
 REPOST_LOG_FILE = "reposted_bg.txt"  # eigen log voor beautygroup
