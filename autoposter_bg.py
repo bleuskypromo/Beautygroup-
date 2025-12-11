@@ -10,7 +10,7 @@ FEED_URI = "at://did:plc:jaka644beit3x4vmmg6yysw7/app.bsky.feed.generator/aaamyq
 
 MAX_PER_RUN = 100          # max reposts per run
 MAX_PER_USER = 3           # max reposts per account per run
-HOURS_BACK = 3            # tijdvenster: laatste 3 uur
+HOURS_BACK = 3             # tijdvenster: laatste 3 uur
 SLEEP_SECONDS = 2          # vertraging tussen reposts/likes
 REPOST_LOG = "reposted_bg.txt"  # eigen logbestand voor BeautyGroup
 
@@ -45,6 +45,42 @@ def get_created_dt(record, post):
         except Exception:
             continue
     return None
+
+
+def has_media(record) -> bool:
+    """Checkt of de post foto's of video's bevat."""
+    embed = getattr(record, "embed", None)
+    if not embed:
+        return False
+
+    # Afbeeldingen
+    if hasattr(embed, "images") and embed.images:
+        return True
+
+    # Video / andere media
+    if hasattr(embed, "media") and embed.media:
+        return True
+    if hasattr(embed, "video") and embed.video:
+        return True
+
+    return False
+
+
+def is_quote_post(record) -> bool:
+    """Checkt of de post een quote-post is (record-embed)."""
+    embed = getattr(record, "embed", None)
+    if not embed:
+        return False
+
+    # Quote zonder media
+    if hasattr(embed, "record") and embed.record:
+        return True
+
+    # Quote mét media
+    if hasattr(embed, "recordWithMedia") and embed.recordWithMedia:
+        return True
+
+    return False
 
 
 def main():
@@ -82,12 +118,20 @@ def main():
         record = post.record
         uri = post.uri
 
-        # skip reposts/quotes/reasons
+        # skip reposts/boosts/reasons
         if getattr(item, "reason", None) is not None:
             continue
 
         # skip replies
         if getattr(record, "reply", None):
+            continue
+
+        # skip quote-posts
+        if is_quote_post(record):
+            continue
+
+        # skip posts zonder media (tekst-only / alleen link)
+        if not has_media(record):
             continue
 
         # al gedaan in vorige run?
