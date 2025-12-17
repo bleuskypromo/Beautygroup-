@@ -7,8 +7,8 @@ from typing import Optional
 # === LIST CONFIG ===
 LIST_URI = "at://did:plc:u56y5ibuou5wzgg6frc5eiyr/app.bsky.graph.list/3lwyvdqvkob2e"
 
-LIST_FEED_LIMIT = 200        # meer = grotere kans alle accounts te pakken
-MAX_USERS_PER_RUN = 50       # max unieke authors per run
+LIST_FEED_LIMIT = 100        # meer = grotere kans alle accounts te pakken
+MAX_USERS_PER_RUN = 100       # max unieke authors per run
 SLEEP_SECONDS = 1
 
 
