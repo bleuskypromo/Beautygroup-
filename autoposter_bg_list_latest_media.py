@@ -9,7 +9,7 @@ from typing import Optional
 LIST_URI = "at://did:plc:u56y5ibuou5wzgg6frc5eiyr/app.bsky.graph.list/3lwyvdqvkob2e"
 
 LIST_FEED_LIMIT = 100        # max 100 per request (API limiet)
-MAX_USERS_PER_RUN = 50       # max unieke authors per run
+MAX_USERS_PER_RUN = 100       # max unieke authors per run
 SLEEP_SECONDS = 1
 
 
