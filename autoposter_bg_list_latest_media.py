@@ -4,11 +4,12 @@ import time
 from datetime import datetime, timezone
 from typing import Optional
 
-# === LIST CONFIG ===
+# === CONFIG: LIST ===
+# Link: https://bsky.app/profile/did:plc:u56y5ibuou5wzgg6frc5eiyr/lists/3lwyvdqvkob2e
 LIST_URI = "at://did:plc:u56y5ibuou5wzgg6frc5eiyr/app.bsky.graph.list/3lwyvdqvkob2e"
 
-LIST_FEED_LIMIT = 100        # meer = grotere kans alle accounts te pakken
-MAX_USERS_PER_RUN = 100       # max unieke authors per run
+LIST_FEED_LIMIT = 100        # max 100 per request (API limiet)
+MAX_USERS_PER_RUN = 50       # max unieke authors per run
 SLEEP_SECONDS = 1
 
 
@@ -94,6 +95,7 @@ def has_media(record) -> bool:
 
 
 def main():
+    # Gebruik bestaande BeautyGroup secrets
     username = os.environ.get("BSKY_USERNAME_BG")
     password = os.environ.get("BSKY_PASSWORD_BG")
 
@@ -105,7 +107,7 @@ def main():
     client.login(username, password)
     log("✅ Ingelogd als BeautyGroup.")
 
-    # List feed ophalen
+    # List feed ophalen (max limit=100)
     try:
         log("📥 List feed ophalen...")
         resp = client.app.bsky.feed.get_list_feed({"list": LIST_URI, "limit": LIST_FEED_LIMIT})
@@ -115,7 +117,7 @@ def main():
         log(f"⚠️ Fout bij ophalen list feed: {e}")
         return
 
-    # Per author de nieuwste media-post (newest-first => eerste per handle)
+    # Per author de nieuwste media post (newest-first => eerste per handle = nieuwste)
     newest_per_user: dict[str, dict] = {}
 
     for item in items:
@@ -134,12 +136,13 @@ def main():
         if is_quote_post(record):
             continue
 
-        # ✅ alleen foto/video
+        # ✅ alleen foto/video (geen text-only)
         if not has_media(record):
             continue
 
         handle = getattr(post_view.author, "handle", "unknown")
 
+        # per handle slechts 1 (de nieuwste)
         if handle in newest_per_user:
             continue
 
@@ -208,3 +211,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+```0
