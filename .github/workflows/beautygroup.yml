@@ -2,7 +2,7 @@ name: Bluesky Auto Reposter (BeautyGroup via feed)
 
 on:
   schedule:
-    - cron: "0 */2 * * *"  # elk uur
+    - cron: "45 */1 * * *"  # elk uur
   workflow_dispatch:
 
 jobs:
