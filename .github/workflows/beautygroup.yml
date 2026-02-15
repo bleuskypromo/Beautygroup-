@@ -1,11 +1,7 @@
-env:
-  WORKFLOWS_DISABLED: true
-
 name: Bluesky Auto Reposter (BeautyGroup via feed)
 
 on:
-  schedule:
-    - cron: "3,33 * * * *"
+
   workflow_dispatch:
 
 jobs:
