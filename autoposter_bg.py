@@ -10,7 +10,7 @@ FEED_URI = "at://did:plc:jaka644beit3x4vmmg6yysw7/app.bsky.feed.generator/aaamyq
 
 MAX_PER_RUN = 100          # max reposts per run
 MAX_PER_USER = 2           # max reposts per account per run
-HOURS_BACK = 1             # tijdvenster: laatste 3 uur
+HOURS_BACK = 2             # tijdvenster: laatste 3 uur
 SLEEP_SECONDS = 1          # vertraging tussen reposts/likes
 REPOST_LOG = "reposted_bg.txt"  # eigen logbestand voor BeautyGroup
 
