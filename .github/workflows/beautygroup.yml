@@ -28,4 +28,4 @@ jobs:
           BSKY_USERNAME_BG: ${{ secrets.BSKY_USERNAME_BG }}
           BSKY_PASSWORD_BG: ${{ secrets.BSKY_PASSWORD_BG }}
         run: |
-          python your_script_name.py
+          python autoposter_bg.py
