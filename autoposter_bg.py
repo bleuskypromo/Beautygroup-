@@ -8,7 +8,7 @@ from pathlib import Path
 # BeautyGroup-feed (NIET de lijst, maar de feed-URL)
 FEED_URI = "at://did:plc:jaka644beit3x4vmmg6yysw7/app.bsky.feed.generator/aaamyqwuiyasw"
 
-MAX_PER_RUN = 50          # max reposts per run
+MAX_PER_RUN = 100          # max reposts per run
 MAX_PER_USER = 2           # max reposts per account per run
 HOURS_BACK = 1             # tijdvenster: laatste 3 uur
 SLEEP_SECONDS = 1          # vertraging tussen reposts/likes
