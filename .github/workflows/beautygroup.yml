@@ -1,0 +1,31 @@
+name: BeautyGroup Reposter
+
+on:
+  schedule:
+    - cron: "20 * * * *"   # Iedere uur op minuut 20
+  workflow_dispatch:       # Handmatig starten mogelijk
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install atproto
+
+      - name: Run BeautyGroup bot
+        env:
+          BSKY_USERNAME_BG: ${{ secrets.BSKY_USERNAME_BG }}
+          BSKY_PASSWORD_BG: ${{ secrets.BSKY_PASSWORD_BG }}
+        run: |
+          python your_script_name.py
