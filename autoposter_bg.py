@@ -23,7 +23,7 @@ print("=== BEAUTYGROUP BOT STARTED ===", flush=True)
 FEEDS = {
     "feed 1": {"link": "", "note": "PROMO FEED (bovenaan)"},
     "feed 2": {"link": "https://bsky.app/profile/did:plc:jaka644beit3x4vmmg6yysw7/feed/aaacbdoptv4x6", "note": "reposted feed"},
-    "feed 3": {"link": "", "note": ""},
+    "feed 3": {"link": "https://bsky.app/profile/did:plc:jaka644beit3x4vmmg6yysw7/feed/aaae6jfc5w2oi", "note": "redfox"},
     "feed 4": {"link": "", "note": ""},
     "feed 5": {"link": "", "note": ""},
     "feed 6": {"link": "", "note": ""},
