@@ -46,7 +46,7 @@ jobs:
           FEED_MAX_ITEMS: "500"
           HASHTAG_MAX_ITEMS: "100"
         run: |
-          python -u beautygroup_reposter.py
+  python -u autoposter_bg.py
 
       - name: Commit state if changed
         run: |
