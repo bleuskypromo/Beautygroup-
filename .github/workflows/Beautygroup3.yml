@@ -1,4 +1,4 @@
-name: BeautyGroup Bot
+name: BeautyGroup Bot3
 
 on:
   workflow_dispatch:
