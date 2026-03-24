@@ -3,7 +3,7 @@ name: BeautyGroup Bot4
 on:
   workflow_dispatch:
   schedule:
-    - cron: "29 * * * *"
+    - cron: "59 * * * *"
 
 permissions:
   contents: write
