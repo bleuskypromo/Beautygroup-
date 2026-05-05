@@ -22,8 +22,8 @@ print("=== BEAUTYGROUP BOT STARTED ===", flush=True)
 
 FEEDS = {
     "feed 1": {"link": "", "note": "PROMO FEED (bovenaan)"},
-    "feed 2": {"link": "https://bsky.app/profile/did:plc:jaka644beit3x4vmmg6yysw7/feed/aaacbdoptv4x6", "note": "reposted feed"},
-    "feed 3": {"link": "https://bsky.app/profile/did:plc:jaka644beit3x4vmmg6yysw7/feed/aaae6jfc5w2oi", "note": "redfox"},
+    "feed 2": {"link": "", "note": ""},
+    "feed 3": {"link": "", "note": ""},
     "feed 4": {"link": "", "note": ""},
     "feed 5": {"link": "", "note": ""},
     "feed 6": {"link": "", "note": ""},
@@ -40,8 +40,8 @@ FEEDS = {
 
 LIJSTEN = {
     "lijst 1": {"link": "", "note": "PROMO LIST (bovenaan)"},
-    "lijst 2": {"link": "https://bsky.app/profile/did:plc:jaka644beit3x4vmmg6yysw7/lists/3m3iga6wnmz2p", "Beautygroup": ""},
-    "lijst 3": {"link": "https://bsky.app/profile/did:plc:jaka644beit3x4vmmg6yysw7/lists/3mgldgnponw2m", "nog creators": ""},
+    "lijst 2": {"link": "https://bsky.app/profile/did:plc:jaka644beit3x4vmmg6yysw7/lists/3mgldgnponw2m", "Beautygroup": ""},
+    "lijst 3": {"link": "", "": ""},
     "lijst 4": {"link": "", "note": ""},
     "lijst 5": {"link": "", "note": ""},
     "lijst 6": {"link": "", "note": ""},
