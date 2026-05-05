@@ -1,0 +1,46 @@
+name: BeautyGroup Bot 10
+
+on:
+  schedule:
+    - cron: "10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install atproto
+
+      - name: Run BeautyGroup bot
+        env:
+          BSKY_USERNAME_BG: ${{ secrets.BSKY_USERNAME_BG }}
+          BSKY_PASSWORD_BG: ${{ secrets.BSKY_PASSWORD_BG }}
+          STATE_FILE: state_beautygroup.json
+          MAX_PER_RUN: 100
+          MAX_PER_USER: 2
+          HOURS_BACK: 2
+          SLEEP_SECONDS: 1
+        run: python beautygroup_reposter.py
+
+      - name: Commit state
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add state_beautygroup.json
+          git commit -m "Update BeautyGroup state" || echo "No changes"
+          git push
