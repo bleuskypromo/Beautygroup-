@@ -35,7 +35,7 @@ jobs:
           MAX_PER_USER: 2
           HOURS_BACK: 2
           SLEEP_SECONDS: 1
-        run: python beautygroup_reposter.py
+        run: python autoposter_bg.py
 
       - name: Commit state
         run: |
